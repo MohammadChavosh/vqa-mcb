@@ -1,0 +1,3 @@
+[submodule "server_tensorflow/tensorflow_compact_bilinear_pooling"]
+	path = server_tensorflow/tensorflow_compact_bilinear_pooling
+	url = https://github.com/ronghanghu/tensorflow_compact_bilinear_pooling.git

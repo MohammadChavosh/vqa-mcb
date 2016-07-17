@@ -44,6 +44,14 @@ To generate an answers JSON file in the format expected by the VQA evaluation co
 
 The code that powers our [live demo](http://demo.berkeleyvision.org/) is in `server/`. To run this, you’ll need to install Flask and change the constants at the top of `server.py`. Then, just do `python server.py`, and the server will bind to `0.0.0.0:5000`.
 
+## TensorFlow Implementation
+
+In `server_tensorflow/` folder, there is a tensorflow version of the VQA demo. To run it, you need to install [TensorFlow](http://tensorflow.org/) (v0.9.0 or higher).
+
+Before running the TensorFlow demos, you need to downloaded the trained models in TensorFlow format by running `download_tensorflow_model.sh` in `server_tensorflow/`. Also, for image feature extraction, you need to download the ResNet-152 model and install Caffe. To run this TensorFlow demo, you only need to install the standard Caffe (which does not need to be the VQA branch).
+
+There is a IPython notebook demo at `notebook_example.ipynb` and a server demo that can be run by `python server.py`. To run them, you need to change the constants at the top of  `notebook_example.ipynb` and `server.py` to your path.
+
 ## License and Citation
 
 This code and the pretrained model is released under the BSD 2-Clause license. See `LICENSE` for more information.
