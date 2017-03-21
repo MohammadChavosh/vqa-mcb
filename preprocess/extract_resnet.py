@@ -42,7 +42,7 @@ def extract_features(target_data, output_data):
     if config.USE_LARGE_INPUT_IMAGES:
         resnet_mean = np.transpose(cv2.resize(np.transpose(resnet_mean,(1,2,0)), (448,448)),(2,0,1))
 
-    print resnet_mean[:,:4,:4]
+    print((resnet_mean[:,:4,:4]))
     cv2.imwrite('./resnet_mean.png',np.transpose(resnet_mean,(1,2,0)))
 
     for i,t_img_filename in enumerate(os.listdir(target_path)):
@@ -53,7 +53,7 @@ def extract_features(target_data, output_data):
         t_img_path =  os.path.join(target_path, t_img_filename)
         img = cv2.imread(t_img_path)
         if img is None:
-            print(t_img_path, "is None!")
+            print((t_img_path, "is None!"))
 
         preprocessed_img = trim_image(img, resnet_mean)
 
@@ -62,21 +62,21 @@ def extract_features(target_data, output_data):
         net.forward()
         feature = net.blobs[config.EXTRACT_LAYER].data[0].reshape(config.EXTRACT_LAYER_SIZE)
         t_end = time.time()
-        print '-------------------------', t_end - t_start
+        print(('-------------------------', t_end - t_start))
 
         output_file_path = os.path.join(output_path, t_img_filename + '.npz')
 
         t_start = time.time()
         np.savez_compressed(output_file_path, x=feature)
         t_end = time.time()
-        print '-------------------------', t_end - t_start
-        print '   index            : ', i, n_data
-        print '   target file      : ', t_img_path
-        print '   output file      : ', output_file_path
+        print(('-------------------------', t_end - t_start))
+        print(('   index            : ', i, n_data))
+        print(('   target file      : ', t_img_path))
+        print(('   output file      : ', output_file_path))
         #print '   image overview   : ', preprocessed_img[:,100,100]
-        print '   shape after pre  : ', preprocessed_img.shape, preprocessed_img.mean()
-        print '   shape of feature : ', feature.shape
-        print '   argmax,min sum f : ', feature.argmax(), feature.argmin(), feature.sum()
+        print(('   shape after pre  : ', preprocessed_img.shape, preprocessed_img.mean()))
+        print(('   shape of feature : ', feature.shape))
+        print(('   argmax,min sum f : ', feature.argmax(), feature.argmin(), feature.sum()))
         #print '   feature[:5]      : ', feature[:5]
         #print '   feature[-5:]     : ', feature[-5:]
     print("DONE")

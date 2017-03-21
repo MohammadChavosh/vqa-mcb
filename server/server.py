@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, url_for, jsonify, send_from_director
 from time import time
 import cv2
 import hashlib
+import sys; sys.path.append('/home/ronghang/workspace/caffe-vqa-mcb/python')
 import caffe
 import vqa_data_provider_layer
 from vqa_data_provider_layer import LoadVQADataProvider
@@ -11,16 +12,16 @@ from skimage.transform import resize
 
 # constants
 GPU_ID = 3
-RESNET_MEAN_PATH = "../00_data_preprocess/ResNet_mean.binaryproto"
-RESNET_LARGE_PROTOTXT_PATH = "../00_data_preprocess/ResNet-152-448-deploy.prototxt"
-RESNET_CAFFEMODEL_PATH = "/x/daylen/ResNet-152-model.caffemodel"
+RESNET_MEAN_PATH = "/home/ronghang/workspace/vqa-mcb/preprocess/ResNet_mean.binaryproto"
+RESNET_LARGE_PROTOTXT_PATH = "/home/ronghang/workspace/vqa-mcb/preprocess/ResNet-152-448-deploy.prototxt"
+RESNET_CAFFEMODEL_PATH = "/home/ronghang/workspace/vqa-mcb/multi_att_2_glove/resnet/ResNet-152-model.caffemodel"
 EXTRACT_LAYER = "res5c"
 EXTRACT_LAYER_SIZE = (2048, 14, 14)
 TARGET_IMG_SIZE = 448
-VQA_PROTOTXT_PATH = "/x/daylen/saved_models/multi_att_2_glove/proto_test_batchsize1.prototxt"
-VQA_CAFFEMODEL_PATH = "/x/daylen/saved_models/multi_att_2_glove/_iter_190000.caffemodel"
-VDICT_PATH = "/x/daylen/saved_models/multi_att_2_glove/vdict.json"
-ADICT_PATH = "/x/daylen/saved_models/multi_att_2_glove/adict.json"
+VQA_PROTOTXT_PATH = "/home/ronghang/workspace/vqa-mcb/multi_att_2_glove/proto_test_batchsize1.prototxt"
+VQA_CAFFEMODEL_PATH = "/home/ronghang/workspace/vqa-mcb/multi_att_2_glove/_iter_190000.caffemodel"
+VDICT_PATH = "/home/ronghang/workspace/vqa-mcb/multi_att_2_glove/vdict.json"
+ADICT_PATH = "/home/ronghang/workspace/vqa-mcb/multi_att_2_glove/adict.json"
 
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG', 'png', 'PNG'])
 UPLOAD_FOLDER = './uploads/'
@@ -67,7 +68,7 @@ def setup():
     if not os.path.exists(VIZ_FOLDER):
         os.makedirs(VIZ_FOLDER)
 
-    print 'Finished setup'
+    print('Finished setup')
 
 def trim_image(img):
     y,x,c = img.shape
@@ -84,7 +85,7 @@ def make_rev_adict(adict):
     indices to text answers.
     """
     rev_adict = {}
-    for k,v in adict.items():
+    for k,v in list(adict.items()):
         rev_adict[v] = k
     return rev_adict
 
@@ -171,7 +172,7 @@ def upload_question():
     start = time()
     img_feature = feature_cache[img_hash]
     question = request.form['question']
-    img_ques_hash = hashlib.md5(img_hash + question).hexdigest()
+    img_ques_hash = hashlib.md5((img_hash + question).encode()).hexdigest()
     qvec, cvec, avec, glove_matrix = vqa_data_provider.create_batch(question)
     vqa_net.blobs['data'].data[...] = np.transpose(qvec,(1,0))
     vqa_net.blobs['cont'].data[...] = np.transpose(cvec,(1,0))

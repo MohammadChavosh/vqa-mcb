@@ -49,7 +49,7 @@ class VQADataProvider:
                     adic[data_split + QID_KEY_SEPARATOR + str(a['question_id'])] = \
                         a['answers']
 
-        print 'parsed', len(qdic), 'questions for', data_split
+        print(('parsed', len(qdic), 'questions for', data_split))
         return qdic, adic
 
     @staticmethod
@@ -67,14 +67,14 @@ class VQADataProvider:
                 qdic[key] = {'qstr': q['question'], 'iid': q['image']}
                 adic[key] = [{'answer': q['answer']}]
 
-        print 'parsed', len(qdic), 'questions for genome'
+        print(('parsed', len(qdic), 'questions for genome'))
         return qdic, adic
 
     @staticmethod
     def load_data(data_split_str):
         all_qdic, all_adic = {}, {}
         for data_split in data_split_str.split('+'):
-            assert data_split in config.DATA_PATHS.keys(), 'unknown data split'
+            assert data_split in list(config.DATA_PATHS.keys()), 'unknown data split'
             if data_split == 'genome':
                 qdic, adic = VQADataProvider.load_genome_json()
                 all_qdic.update(qdic)
@@ -86,7 +86,7 @@ class VQADataProvider:
         return all_qdic, all_adic
 
     def getQuesIds(self):
-        return self.qdic.keys()
+        return list(self.qdic.keys())
 
     def getStrippedQuesId(self, qid):
         return qid.split(QID_KEY_SEPARATOR)[1]
@@ -110,21 +110,21 @@ class VQADataProvider:
         for i in [r'\-',r'\/']:
             t_str = re.sub( i, ' ', t_str)
         q_list = re.sub(r'\?','',t_str.lower()).split(' ')
-        q_list = filter(lambda x: len(x) > 0, q_list)
+        q_list = [x for x in q_list if len(x) > 0]
         return q_list
 
     def extract_answer(self,answer_obj):
         """ Return the most popular answer in string."""
         if self.mode == 'test-dev' or self.mode == 'test':
             return -1
-        answer_list = [ answer_obj[i]['answer'] for i in xrange(10)]
+        answer_list = [ answer_obj[i]['answer'] for i in range(10)]
         dic = {}
         for ans in answer_list:
-            if dic.has_key(ans):
+            if ans in dic:
                 dic[ans] +=1
             else:
                 dic[ans] = 1
-        max_key = max((v,k) for (k,v) in dic.items())[1]
+        max_key = max((v,k) for (k,v) in list(dic.items()))[1]
         return max_key
 
     def extract_answer_prob(self,answer_obj):
@@ -135,7 +135,7 @@ class VQADataProvider:
         answer_list = [ ans['answer'] for ans in answer_obj]
         prob_answer_list = []
         for ans in answer_list:
-            if self.adict.has_key(ans):
+            if ans in self.adict:
                 prob_answer_list.append(ans)
 
         if len(prob_answer_list) == 0:
@@ -163,16 +163,16 @@ class VQADataProvider:
         qvec = np.zeros(max_length)
         cvec = np.zeros(max_length)
         glove_matrix = np.zeros(max_length * GLOVE_EMBEDDING_SIZE).reshape(max_length, GLOVE_EMBEDDING_SIZE)
-        for i in xrange(max_length):
+        for i in range(max_length):
             if i < max_length - len(q_list):
                 cvec[i] = 0
             else:
                 w = q_list[i-(max_length-len(q_list))]
                 if w not in self.glove_dict:
-                    self.glove_dict[w] = self.nlp(u'%s' % w).vector
+                    self.glove_dict[w] = self.nlp('%s' % w).vector
                 glove_matrix[i] = self.glove_dict[w]
                 # is the word in the vocabulary?
-                if self.vdict.has_key(w) is False:
+                if (w in self.vdict) is False:
                     w = ''
                 qvec[i] = self.vdict[w]
                 cvec[i] = 0 if i == max_length - len(q_list) else 1
@@ -184,7 +184,7 @@ class VQADataProvider:
         if self.mode =='test-dev' or self.mode == 'test':
             return -1
 
-        if self.adict.has_key(ans_str):
+        if ans_str in self.adict:
             ans = self.adict[ans_str]
         else:
             ans = self.adict['']
@@ -194,7 +194,7 @@ class VQADataProvider:
         """ Return answer id if the answer is included in vocabulary otherwise '' """
         if self.rev_adict is None:
             rev_adict = {}
-            for k,v in self.adict.items():
+            for k,v in list(self.adict.items()):
                 rev_adict[v] = k
             self.rev_adict = rev_adict
 
@@ -230,7 +230,7 @@ class VQADataProvider:
                 t_ivec = ( t_ivec / np.sqrt((t_ivec**2).sum()) )
             except:
                 t_ivec = 0.
-                print 'data not found for qid : ', q_iid,  self.mode
+                print(('data not found for qid : ', q_iid,  self.mode))
              
             # convert answer to vec
             if self.mode == 'val' or self.mode == 'test-dev' or self.mode == 'test':
@@ -262,7 +262,7 @@ class VQADataProvider:
             answer_obj = self.getAnsObj(t_qid)
             answer_list = [ans['answer'] for ans in answer_obj]
             for ans in answer_list:
-                if self.adict.has_key(ans):
+                if ans in self.adict:
                     return True
 
         counter = 0
@@ -290,7 +290,7 @@ class VQADataProvider:
                 random.shuffle(qid_list)
                 self.qid_list = qid_list
                 self.batch_index = 0
-                print("%d questions were skipped in a single epoch" % self.n_skipped)
+                print(("%d questions were skipped in a single epoch" % self.n_skipped))
                 self.n_skipped = 0
 
         t_batch = self.create_batch(t_qid_list)

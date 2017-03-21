@@ -96,22 +96,22 @@ def visualize_failures(stat_list,mode):
                         img_title = pre + str(' '.join(t_question_list)) + '.  a_' + \
                             str(ans) + ' p_' + str(pred) + '.png'
                         count += 1
-                        print os.path.join(savepath,img_title)
+                        print((os.path.join(savepath,img_title)))
                         t_img.save(os.path.join(savepath,img_title))
 
-    print 'saving whatis'
+    print('saving whatis')
     qt_color_list = [['what','color']]
     save_qtype(qt_color_list, 'colors', mode)
 
-    print 'saving whatis'
+    print('saving whatis')
     qt_whatis_list = [['what','is'],['what','kind'],['what','are']]
     save_qtype(qt_whatis_list, 'whatis', mode)
 
-    print 'saving is'
+    print('saving is')
     qt_is_list = [['is','the'], ['is','this'],['is','there']]
     save_qtype(qt_is_list, 'is', mode)
 
-    print 'saving how many'
+    print('saving how many')
     qt_howmany_list =[['how','many']]
     save_qtype(qt_howmany_list, 'howmany', mode)
 
@@ -142,7 +142,7 @@ def exec_validation(device_id, mode, it='', visualize=False):
         t_pred_str = [dp.vec_to_answer(pred_symbol) for pred_symbol in t_pred_list]
         testloss_list.append(net.blobs['loss'].data)
         for qid, iid, ans, pred in zip(t_qid_list, t_iid_list, t_answer.tolist(), t_pred_str):
-            pred_list.append({u'answer':pred, u'question_id': int(dp.getStrippedQuesId(qid))})
+            pred_list.append({'answer':pred, 'question_id': int(dp.getStrippedQuesId(qid))})
             if visualize:
                 q_list = dp.seq_to_list(dp.getQuesStr(qid))
                 if mode == 'test-dev' or 'test':
@@ -150,7 +150,7 @@ def exec_validation(device_id, mode, it='', visualize=False):
                     ans_list = ['']*10
                 else:
                     ans_str = dp.vec_to_answer(ans)
-                    ans_list = [ dp.getAnsObj(qid)[i]['answer'] for i in xrange(10)]
+                    ans_list = [ dp.getAnsObj(qid)[i]['answer'] for i in range(10)]
                 stat_list.append({\
                                     'qid'   : qid,
                                     'q_list' : q_list,
@@ -234,7 +234,7 @@ def drawgraph(results, save_question_type_graphs=False):
     def draw_qt_acc(target_key_list, figname):
         fig = plt.figure()
         for k in target_key_list:
-            print k,type(k)
+            print((k,type(k)))
             t_val = np.array([ qt_dic[k] for qt_dic in qt_dic_list])
             plt.plot(it,t_val,label=str(k))
         plt.legend(fontsize='small')

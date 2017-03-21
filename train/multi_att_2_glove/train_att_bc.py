@@ -35,7 +35,7 @@ def qlstm(mode, batchsize, T, question_vocab_size):
                        weight_filler=dict(type='uniform',min=-0.08,max=0.08),\
                        bias_filler=dict(type='constant',value=0)))
     tops1 = L.Slice(n.lstm1, ntop=T, slice_param={'axis':0})
-    for i in xrange(T-1):
+    for i in range(T-1):
         n.__setattr__('slice_first'+str(i), tops1[int(i)])
         n.__setattr__('silence_data_first'+str(i), L.Silence(tops1[int(i)],ntop=0))
     n.lstm1_out = tops1[T-1]
@@ -52,7 +52,7 @@ def qlstm(mode, batchsize, T, question_vocab_size):
                        weight_filler=dict(type='uniform',min=-0.08,max=0.08),\
                        bias_filler=dict(type='constant',value=0)))
     tops2 = L.Slice(n.lstm2, ntop=T, slice_param={'axis':0})
-    for i in xrange(T-1):
+    for i in range(T-1):
         n.__setattr__('slice_second'+str(i), tops2[int(i)])
         n.__setattr__('silence_data_second'+str(i), L.Silence(tops2[int(i)],ntop=0))
     n.lstm2_out = tops2[T-1]
@@ -111,13 +111,13 @@ def make_answer_vocab(adic, vocab_size):
     adict = {'':0}
     nadict = {'':1000000}
     vid = 1
-    for qid in adic.keys():
+    for qid in list(adic.keys()):
         answer_obj = adic[qid]
         answer_list = [ans['answer'] for ans in answer_obj]
         
         for q_ans in answer_list:
             # create dict
-            if adict.has_key(q_ans):
+            if q_ans in adict:
                 nadict[q_ans] += 1
             else:
                 nadict[q_ans] = 1
@@ -126,7 +126,7 @@ def make_answer_vocab(adic, vocab_size):
 
     # debug
     nalist = []
-    for k,v in sorted(nadict.items(), key=lambda x:x[1]):
+    for k,v in sorted(list(nadict.items()), key=lambda x:x[1]):
         nalist.append((k,v))
 
     # remove words that appear less than once 
@@ -148,14 +148,14 @@ def make_question_vocab(qdic):
     """
     vdict = {'':0}
     vid = 1
-    for qid in qdic.keys():
+    for qid in list(qdic.keys()):
         # sequence to list
         q_str = qdic[qid]['qstr']
         q_list = VQADataProvider.seq_to_list(q_str)
 
         # create dict
         for w in q_list:
-            if not vdict.has_key(w):
+            if w not in vdict:
                 vdict[w] = vid
                 vid +=1
 
@@ -165,10 +165,10 @@ def make_vocab_files():
     """
     Produce the question and answer vocabulary files.
     """
-    print 'making question vocab...', config.QUESTION_VOCAB_SPACE
+    print(('making question vocab...', config.QUESTION_VOCAB_SPACE))
     qdic, _ = VQADataProvider.load_data(config.QUESTION_VOCAB_SPACE)
     question_vocab = make_question_vocab(qdic)
-    print 'making answer vocab...', config.ANSWER_VOCAB_SPACE
+    print(('making answer vocab...', config.ANSWER_VOCAB_SPACE))
     _, adic = VQADataProvider.load_data(config.ANSWER_VOCAB_SPACE)
     answer_vocab = make_answer_vocab(adic, config.NUM_OUTPUT_UNITS)
     return question_vocab, answer_vocab
@@ -179,7 +179,7 @@ def main():
 
     question_vocab, answer_vocab = {}, {}
     if os.path.exists('./result/vdict.json') and os.path.exists('./result/adict.json'):
-        print 'restoring vocab'
+        print('restoring vocab')
         with open('./result/vdict.json','r') as f:
             question_vocab = json.load(f)
         with open('./result/adict.json','r') as f:
@@ -191,8 +191,8 @@ def main():
         with open('./result/adict.json','w') as f:
             json.dump(answer_vocab, f)
 
-    print 'question vocab size:', len(question_vocab)
-    print 'answer vocab size:', len(answer_vocab)
+    print(('question vocab size:', len(question_vocab)))
+    print(('answer vocab size:', len(answer_vocab)))
 
     with open('./result/proto_train.prototxt', 'w') as f:
         f.write(str(qlstm(config.TRAIN_DATA_SPLITS, config.BATCH_SIZE, \
@@ -216,18 +216,18 @@ def main():
         train_loss[it] = solver.net.blobs['loss'].data
    
         if it % config.PRINT_INTERVAL == 0:
-            print 'Iteration:', it
+            print(('Iteration:', it))
             c_mean_loss = train_loss[it-config.PRINT_INTERVAL:it].mean()
-            print 'Train loss:', c_mean_loss
+            print(('Train loss:', c_mean_loss))
         if it != 0 and it % config.VALIDATE_INTERVAL == 0:
             solver.test_nets[0].save('./result/tmp.caffemodel')
-            print 'Validating...'
+            print('Validating...')
             test_loss, acc_overall, acc_per_ques, acc_per_ans = exec_validation(config.GPU_ID, 'val', it=it)
-            print 'Test loss:', test_loss
-            print 'Accuracy:', acc_overall
+            print(('Test loss:', test_loss))
+            print(('Accuracy:', acc_overall))
             results.append([it, c_mean_loss, test_loss, acc_overall, acc_per_ques, acc_per_ans])
             best_result_idx = np.array([x[3] for x in results]).argmax()
-            print 'Best accuracy of', results[best_result_idx][3], 'was at iteration', results[best_result_idx][0]
+            print(('Best accuracy of', results[best_result_idx][3], 'was at iteration', results[best_result_idx][0]))
             drawgraph(results)
 
 if __name__ == '__main__':

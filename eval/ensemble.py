@@ -24,7 +24,7 @@ If the folder also contains "preds.pkl", evaluation is skipped for that network.
 
 import caffe
 import numpy as np
-import cPickle
+import pickle
 import argparse, os, glob
 import sys
 import json
@@ -49,8 +49,8 @@ def verify_all(folder_paths):
     if len(adicts) > 1:
         for a2 in adicts[1:]:
             if set(adicts[0].keys()) != set(a2.keys()):
-                print set(adicts[0].keys()) - set(a2.keys())
-                print set(a2.keys()) - set(adicts[0].keys())
+                print((set(adicts[0].keys()) - set(a2.keys())))
+                print((set(a2.keys()) - set(adicts[0].keys())))
                 raise Exception('Answer vocab mismatch')
     return adicts
 
@@ -101,17 +101,17 @@ def eval_one(folder_path, gpuid, ques_file):
     dp = LoadVQADataProvider(ques_file, img_feature_prefix, vdict_path, \
         adict_path, mode='test', batchsize=batch_size, data_shape=data_shape)
     total_questions = len(dp.getQuesIds())
-    print total_questions, 'total questions'
+    print((total_questions, 'total questions'))
 
     if os.path.exists(folder_path + get_pkl_fname(ques_file)):
-        print 'Found existing prediction file, trying to load...'
+        print('Found existing prediction file, trying to load...')
         with open(folder_path + get_pkl_fname(ques_file), 'r') as f:
-            preds = cPickle.load(f)
+            preds = pickle.load(f)
         if len(preds) >= total_questions:
-            print 'Loaded.'
+            print('Loaded.')
             return preds
         else:
-            print 'Number of saved answers does not match number of questions, continuing...'
+            print('Number of saved answers does not match number of questions, continuing...')
 
     caffe.set_device(gpuid)
     caffe.set_mode_gpu()
@@ -122,8 +122,8 @@ def eval_one(folder_path, gpuid, ques_file):
 
     net = caffe.Net(proto_path, model_path, caffe.TEST)
 
-    print 'Model loaded:', model_path
-    print 'Image feature prefix:', img_feature_prefix
+    print(('Model loaded:', model_path))
+    print(('Image feature prefix:', img_feature_prefix))
     sys.stdout.flush()
 
 
@@ -162,7 +162,7 @@ def make_rev_adict(adict):
     indices to text answers.
     """
     rev_adict = {}
-    for k,v in adict.items():
+    for k,v in list(adict.items()):
         rev_adict[v] = k
     return rev_adict
 
@@ -175,7 +175,7 @@ def get_qid_valid_answer_dict(ques_file, adict):
     """
     Returns a dictionary mapping question IDs to valid neuron indices.
     """
-    print 'Multiple choice mode: making valid answer dictionary...'
+    print('Multiple choice mode: making valid answer dictionary...')
     valid_answer_dict = {}
     with open(ques_file, 'r') as f:
         qdata = json.load(f)
@@ -188,27 +188,27 @@ def get_qid_valid_answer_dict(ques_file, adict):
             if answer in adict:
                 valid_indices.append(adict[answer])
         if len(valid_indices) == 0:
-            print "we won't be able to answer qid", qid
+            print(("we won't be able to answer qid", qid))
         valid_answer_dict[qid] = valid_indices
     return valid_answer_dict
 
 def dedupe(arr):
-    print 'Deduping arr of len', len(arr)
+    print(('Deduping arr of len', len(arr)))
     deduped = []
     seen = set()
     for qid, pred in arr:
         if qid not in seen:
             seen.add(qid)
             deduped.append((qid, pred))
-    print 'New len', len(deduped)
+    print(('New len', len(deduped)))
     return deduped
 
 def reorder_one(predictions, this_adict, canonical_adict):
     index_map = {}
-    for idx, word in make_rev_adict(this_adict).iteritems():
+    for idx, word in list(make_rev_adict(this_adict).items()):
         index_map[int(idx)] = int(canonical_adict[word])
     index_array = np.zeros(len(index_map), dtype=int)
-    for src_idx, dest_idx in index_map.iteritems():
+    for src_idx, dest_idx in list(index_map.items()):
         index_array[src_idx] = dest_idx
     reordered = []
     for qid, output in predictions:
@@ -226,7 +226,7 @@ def reorder_predictions(predictions, adicts):
     for a2 in adicts[1:]:
         if adicts[0] != a2:
             need_to_reorder = True
-    print 'Reordering...' if need_to_reorder else 'No need to reorder!'
+    print(('Reordering...' if need_to_reorder else 'No need to reorder!'))
     if not need_to_reorder:
         return predictions
     reordered = []
@@ -242,14 +242,14 @@ def average_outputs(arr_of_arr, rev_adict, qid_valid_answer_dict):
     Given a list of lists, where each list contains (QID, answer vector) tuples,
     returns a single dictionary which maps a question ID to the text answer.
     """
-    print 'Averaging outputs...'
+    print('Averaging outputs...')
     merged = defaultdict(list)
     for arr in arr_of_arr:
         for qid, ans_vec in arr:
             merged[qid].append(ans_vec)
 
-    merged = {qid: softmax(np.vstack(ans_vecs).mean(axis=0)) for qid, ans_vecs in merged.iteritems()}
-    mask_len = len(merged.values()[0])
+    merged = {qid: softmax(np.vstack(ans_vecs).mean(axis=0)) for qid, ans_vecs in list(merged.items())}
+    mask_len = len(list(merged.values())[0])
 
     # Multiple choice filtering
     if qid_valid_answer_dict is not None:
@@ -260,17 +260,17 @@ def average_outputs(arr_of_arr, rev_adict, qid_valid_answer_dict):
                 mask[idx] = 1
             merged[qid] *= mask
 
-    merged = {qid: rev_adict[ans_vec.argmax()] for qid, ans_vec in merged.iteritems()}
+    merged = {qid: rev_adict[ans_vec.argmax()] for qid, ans_vec in list(merged.items())}
 
     return merged
 
 def save_json(qid_ans_dict, fname):
     tmp = []
-    for qid, ans in qid_ans_dict.iteritems():
-        tmp.append({u'answer': ans, u'question_id': qid})
+    for qid, ans in list(qid_ans_dict.items()):
+        tmp.append({'answer': ans, 'question_id': qid})
     with open(fname, 'w') as f:
         json.dump(tmp, f)
-    print 'Saved to', fname
+    print(('Saved to', fname))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -281,7 +281,7 @@ def main():
         help='space-separated list of folders containing models')
     args = parser.parse_args()
     assert len(args.folders) > 0, 'please specify at least one folder'
-    print 'Folders', args.folders
+    print(('Folders', args.folders))
 
     adicts = verify_all(args.folders)
     qid_valid_answer_dict = None

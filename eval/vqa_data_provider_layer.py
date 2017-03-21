@@ -8,6 +8,7 @@ import re
 import json
 import spacy
 from operator import mul
+from functools import reduce
 
 GLOVE_EMBEDDING_SIZE = 300
 
@@ -43,7 +44,7 @@ class LoadVQADataProvider:
         self.img_file_pre = img_file_pre
         # load ques file
         with open(self.quesFile,'r') as f:
-            print 'reading : ', self.quesFile
+            print(('reading : ', self.quesFile))
             qdata = json.load(f)
             qdic = {}
             for q in qdata['questions']:
@@ -61,7 +62,7 @@ class LoadVQADataProvider:
         self.glove_dict = {} # word -> glove vector
 
     def getQuesIds(self):
-        return self.qdic.keys()
+        return list(self.qdic.keys())
 
     def getImgId(self,qid):
         return self.qdic[qid]['iid']
@@ -81,21 +82,21 @@ class LoadVQADataProvider:
         for i in [r'\-',r'\/']:
             t_str = re.sub( i, ' ', t_str)
         q_list = re.sub(r'\?','',t_str.lower()).split(' ')
-        q_list = filter(lambda x: len(x) > 0, q_list)
+        q_list = [x for x in q_list if len(x) > 0]
         return q_list
 
     def extract_answer(self,answer_obj):
         """ Return the most popular answer in string."""
         if self.mode == 'test-dev' or self.mode == 'test':
             return -1
-        answer_list = [ answer_obj[i]['answer'] for i in xrange(10)]
+        answer_list = [ answer_obj[i]['answer'] for i in range(10)]
         dic = {}
         for ans in answer_list:
-            if dic.has_key(ans):
+            if ans in dic:
                 dic[ans] +=1
             else:
                 dic[ans] = 1
-        max_key = max((v,k) for (k,v) in dic.items())[1]
+        max_key = max((v,k) for (k,v) in list(dic.items()))[1]
         return max_key
 
     def extract_answer_prob(self,answer_obj):
@@ -106,7 +107,7 @@ class LoadVQADataProvider:
         answer_list = [ ans['answer'] for ans in answer_obj]
         prob_answer_list = []
         for ans in answer_list:
-            if self.adict.has_key(ans):
+            if ans in self.adict:
                 prob_answer_list.append(ans)
 
         if len(prob_answer_list) == 0:
@@ -131,7 +132,7 @@ class LoadVQADataProvider:
             
             for q_ans in answer_list:
                 # create dict
-                if adict.has_key(q_ans):
+                if q_ans in adict:
                     nadict[q_ans] += 1
                 else:
                     nadict[q_ans] = 1
@@ -143,10 +144,10 @@ class LoadVQADataProvider:
         for k,v in sorted(nadict.items()):
             klist.append((k,v))
         nalist = []
-        for k,v in sorted(nadict.items(), key=lambda x:x[1]):
+        for k,v in sorted(list(nadict.items()), key=lambda x:x[1]):
             nalist.append((k,v))
         alist = []
-        for k,v in sorted(adict.items(), key=lambda x:x[1]):
+        for k,v in sorted(list(adict.items()), key=lambda x:x[1]):
             alist.append((k,v))
 
         # remove words that appear less than once 
@@ -159,8 +160,8 @@ class LoadVQADataProvider:
         for i, w in enumerate(nalist[-n_ans_vocabulary:]):
             n_valid_ans += w[1]
             adict_nid[w[0]] = i
-        print 'Valid answers are : ', n_valid_ans
-        print 'Invalid answers are : ', n_del_ans
+        print(('Valid answers are : ', n_valid_ans))
+        print(('Invalid answers are : ', n_del_ans))
 
         return n_ans_vocabulary, adict_nid
 
@@ -178,7 +179,7 @@ class LoadVQADataProvider:
 
             # create dict
             for w in q_list:
-                if vdict.has_key(w):
+                if w in vdict:
                     ndict[w] += 1
                 else:
                     ndict[w] = 1
@@ -190,10 +191,10 @@ class LoadVQADataProvider:
         for k,v in sorted(ndict.items()):
             klist.append((k,v))
         nlist = []
-        for k,v in sorted(ndict.items(), key=lambda x:x[1]):
+        for k,v in sorted(list(ndict.items()), key=lambda x:x[1]):
             nlist.append((k,v))
         vlist = []
-        for k,v in sorted(vdict.items(), key=lambda x:x[1]):
+        for k,v in sorted(list(vdict.items()), key=lambda x:x[1]):
             vlist.append((k,v))
 
         n_vocabulary = len(vlist)
@@ -218,16 +219,16 @@ class LoadVQADataProvider:
         qvec = np.zeros(max_length)
         cvec = np.zeros(max_length)
         glove_matrix = np.zeros(max_length * GLOVE_EMBEDDING_SIZE).reshape(max_length, GLOVE_EMBEDDING_SIZE)
-        for i in xrange(max_length):
+        for i in range(max_length):
             if i < max_length - len(q_list):
                 cvec[i] = 0
             else:
                 w = q_list[i-(max_length-len(q_list))]
                 if w not in self.glove_dict:
-                    self.glove_dict[w] = self.nlp(u'%s' % w).vector
+                    self.glove_dict[w] = self.nlp('%s' % w).vector
                 glove_matrix[i] = self.glove_dict[w]
                 # is the word in the vocabulary?
-                if self.vdict.has_key(w) is False:
+                if (w in self.vdict) is False:
                     w = ''
                 qvec[i] = self.vdict[w]
                 cvec[i] = 0 if i == max_length - len(q_list) else 1
@@ -239,7 +240,7 @@ class LoadVQADataProvider:
         if self.mode =='test-dev' or self.mode == 'test':
             return -1
 
-        if self.adict.has_key(ans_str):
+        if ans_str in self.adict:
             ans = self.adict[ans_str]
         else:
             ans = self.adict['']
@@ -249,7 +250,7 @@ class LoadVQADataProvider:
         """ Return answer id if the answer is included in vocaburary otherwise '' """
         if self.rev_adict is None:
             rev_adict = {}
-            for k,v in self.adict.items():
+            for k,v in list(self.adict.items()):
                 rev_adict[v] = k
             self.rev_adict = rev_adict
 
@@ -297,7 +298,7 @@ class LoadVQADataProvider:
                     t_ivec = np.concatenate([t_ivec, self.coords.copy()])
             except:
                 t_ivec = 0.
-                print 'data not found for qid : ', q_iid,  self.mode
+                print(('data not found for qid : ', q_iid,  self.mode))
              
             # convert answer to vec
             if self.mode == 'val' or self.mode == 'test-dev' or self.mode == 'test':
@@ -331,7 +332,7 @@ class LoadVQADataProvider:
             answer_obj = self.getAnsObj(t_qid)
             answer_list = [ans['answer'] for ans in answer_obj]
             for ans in answer_list:
-                if self.adict.has_key(ans):
+                if ans in self.adict:
                     return True
 
         counter = 0
@@ -366,7 +367,7 @@ class LoadVQADataProvider:
                 # random.shuffle(qid_list)
                 self.qid_list = qid_list
                 self.batch_index = 0
-                print("%d questions were skipped in a single epoch" % self.n_skipped)
+                print(("%d questions were skipped in a single epoch" % self.n_skipped))
                 self.n_skipped = 0
 
         t_batch = self.create_batch(t_qid_list)

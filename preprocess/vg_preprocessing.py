@@ -54,9 +54,9 @@ for idx, word in enumerate(scales):
 
 def text2int(textnum):
         if textnum == 'hundred':
-            return unicode(str(100))
+            return str(str(100))
         if textnum == 'thousand':
-            return unicode(str(1000))
+            return str(str(1000))
 
         current = result = 0
         for word in textnum.split():
@@ -67,7 +67,7 @@ def text2int(textnum):
             if scale > 100:
                 result += current
                 current = 0
-        return unicode(str(result + current))
+        return str(str(result + current))
 
 
 def preprocess(aug=True):
