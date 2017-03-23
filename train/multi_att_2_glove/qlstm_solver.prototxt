@@ -5,7 +5,7 @@ test_net: "./result/proto_test.prototxt"
 max_iter: 1000000
 display: 10000
 snapshot: 5000
-snapshot_prefix: "./result/"
+snapshot_prefix: "./caffemodel/vqa_mcb"
 
 # The base learning rate, momentum and the weight decay of the network.
 solver_type: ADAM
