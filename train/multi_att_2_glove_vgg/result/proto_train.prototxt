@@ -9,7 +9,7 @@ layer {
   python_param {
     module: "vqa_data_provider_layer"
     layer: "VQADataProviderLayer"
-    param_str: "{\"batchsize\": 32, \"mode\": \"train+val\"}"
+    param_str: "{\"mode\": \"train+val\", \"batchsize\": 32}"
   }
 }
 layer {

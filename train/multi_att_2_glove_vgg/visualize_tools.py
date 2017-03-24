@@ -135,7 +135,7 @@ def exec_validation(device_id, mode, it='', visualize=False):
         t_word, t_cont, t_img_feature, t_answer, t_glove_matrix, t_qid_list, t_iid_list, epoch = dp.get_batch_vec()
         net.blobs['data'].data[...] = np.transpose(t_word,(1,0))
         net.blobs['cont'].data[...] = np.transpose(t_cont,(1,0))
-        net.blobs['img_feature'].data[...] = t_img_feature
+        net.blobs['img_feature_raw'].data[...] = t_img_feature
         net.blobs['label'].data[...] = t_answer
         net.blobs['glove'].data[...] = np.transpose(t_glove_matrix, (1,0,2))
         net.forward()
