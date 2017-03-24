@@ -1,0 +1,6 @@
+{
+"batch_size": 32,
+"data_shape": [2048, 14, 14],
+"img_feature_prefix": "/x/daylen/test2015/COCO_test2015_",
+"glove": true
+}
