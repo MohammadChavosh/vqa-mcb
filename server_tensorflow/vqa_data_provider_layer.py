@@ -13,6 +13,7 @@ GLOVE_EMBEDDING_SIZE = 300
 
 CURRENT_DATA_SHAPE = None
 
+
 class LoadVQADataProvider:
 
     def __init__(self, vdict_path, adict_path, \

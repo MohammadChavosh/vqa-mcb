@@ -104,4 +104,4 @@ def vqa_mcb_model(word_indices, glove_vector, seq_length, img_feature,
         prediction = cnn.fc_layer("prediction", cbp1_norm,
                                   output_dim=num_classes)
 
-    return prediction, att_softmax0, att_softmax1
+    return prediction, att_softmax0, att_softmax1, q, att_feature
