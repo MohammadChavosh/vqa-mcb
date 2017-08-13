@@ -100,7 +100,7 @@ class VQAModel:
 		correct_answer = VQAModel.vqa_data_provider.answer_to_vec(answer)
 		labels = np.zeros(scores.shape)
 		labels[correct_answer] = 1.0
-		tf_loss = tf.nn.softmax_cross_entropy_with_logits(labels=correct_answer, logits=scores, name='for_agent_loss')
+		tf_loss = tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=scores, name='for_agent_loss')
 		loss = VQAModel.sess.run(tf_loss)
 		accuracy = float(correct_answer == prediction)
 		state = np.concatenate((q_features.reshape((1, -1)), att_features.reshape((1, -1))), axis=1)

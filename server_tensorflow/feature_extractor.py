@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-import sys; sys.path.append('/home/mll/Desktop/Chavosh/caffe/python')
+import sys; sys.path.append('/home/mll/Chavosh/caffe/python')
 import caffe
 
 RESNET_MEAN_PATH = "../preprocess/ResNet_mean.binaryproto"
