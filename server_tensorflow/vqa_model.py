@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
+from sklearn.metrics import log_loss
 
 import vqa_data_provider_layer
 from vqa_data_provider_layer import LoadVQADataProvider
@@ -63,7 +64,6 @@ class VQAModel:
 	                                            num_classes, cbp0_rand, cbp1_rand, apply_dropout)
 	saver = tf.train.Saver()
 	saver.restore(sess, PRETRAINED_MODEL)
-	loss_session = tf.Session()
 
 	def __init__(self):
 		pass
@@ -97,12 +97,12 @@ class VQAModel:
 		                                               VQAModel.seq_length: [seq_length_val],
 		                                               VQAModel.img_feature: img_feature_val})
 		scores = VQAModel.softmax(np.squeeze(scores))
+		soft_max = VQAModel.softmax(scores)
 		prediction = np.argmax(scores)
 		correct_answer = VQAModel.vqa_data_provider.answer_to_vec(answer)
 		labels = np.zeros(scores.shape)
 		labels[correct_answer] = 1.0
-		tf_loss = tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=scores, name='for_agent_loss')
-		loss = VQAModel.loss_session.run(tf_loss)
+		loss = log_loss(labels, soft_max)
 		accuracy = float(correct_answer == prediction)
 		state = np.concatenate((q_features.reshape((1, -1)), att_features.reshape((1, -1))), axis=1)
 		return loss, accuracy, state, prediction
