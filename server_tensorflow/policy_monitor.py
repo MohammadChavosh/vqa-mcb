@@ -88,7 +88,7 @@ class PolicyMonitor(object):
 				self.saver.save(sess, self.checkpoint_path)
 
 			print "Eval results at step {}: first_accuracy {}, last_reward {}, total_reward {}, episode_length {}".format(global_step, accuracy, reward, total_reward, episode_length)
-			tf.logging.info("Eval results at step {}: total_reward {}, episode_length {}".format(global_step, total_reward, episode_length))
+			# tf.logging.info("Eval results at step {}: total_reward {}, episode_length {}".format(global_step, total_reward, episode_length))
 
 			return total_reward, episode_length, reward
 
