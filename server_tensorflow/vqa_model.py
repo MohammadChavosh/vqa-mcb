@@ -63,6 +63,7 @@ class VQAModel:
 	                                            num_classes, cbp0_rand, cbp1_rand, apply_dropout)
 	saver = tf.train.Saver()
 	saver.restore(sess, PRETRAINED_MODEL)
+	loss_session = tf.Session()
 
 	def __init__(self):
 		pass
@@ -101,9 +102,7 @@ class VQAModel:
 		labels = np.zeros(scores.shape)
 		labels[correct_answer] = 1.0
 		tf_loss = tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=scores, name='for_agent_loss')
-		tmp_session = tf.Session()
-		loss = tmp_session.run(tf_loss)
-		tmp_session.close()
+		loss = VQAModel.loss_session.run(tf_loss)
 		accuracy = float(correct_answer == prediction)
 		state = np.concatenate((q_features.reshape((1, -1)), att_features.reshape((1, -1))), axis=1)
 		return loss, accuracy, state, prediction
