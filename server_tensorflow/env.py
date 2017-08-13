@@ -62,14 +62,14 @@ class Environment:
 			self.crop_coordinates[3] = min(self.crop_coordinates[3] + self.y_alpha, img_size[1])
 		self.img_features = self.get_resized_region_image_features()
 		if action_type == 'End':
-			self.latest_loss, self.latest_accuracy, self.state, _ = self.vqa_model.get_result(self.img_features, self.question, self.answer)
+			self.latest_loss, self.latest_accuracy, self.state, _ = VQAModel.get_result(self.img_features, self.question, self.answer)
 			self.state = np.concatenate((self.state, np.array([[self.steps]])), axis=1)
 			if self.latest_accuracy < 0.1:
 				return self.TRIGGER_NEGATIVE_REWARD, True
 			if self.latest_accuracy > 0.9:
 				return self.TRIGGER_POSITIVE_REWARD, True
 		else:
-			loss, self.latest_accuracy, self.state, _ = self.vqa_model.get_result(self.img_features, self.question, self.answer)
+			loss, self.latest_accuracy, self.state, _ = VQAModel.get_result(self.img_features, self.question, self.answer)
 			self.state = np.concatenate((self.state, np.array([[self.steps]])), axis=1)
 			if self.latest_loss > loss:
 				self.latest_loss = loss
@@ -127,5 +127,5 @@ class Environment:
 		img_size = self.img_array.shape
 		self.crop_coordinates = [0, 0, img_size[0], img_size[1]]
 		self.img_features = self.get_resized_region_image_features()
-		self.latest_loss, self.latest_accuracy, self.state, _ = self.vqa_model.get_result(self.img_features, self.question, self.answer)
+		self.latest_loss, self.latest_accuracy, self.state, _ = VQAModel.get_result(self.img_features, self.question, self.answer)
 		self.state = np.concatenate((self.state, np.array([[self.steps]])), axis=1)
