@@ -44,7 +44,7 @@ apply_dropout = False
 
 
 class VQAModel:
-	vqa_data_provider = LoadVQADataProvider(VDICT_PATH, ADICT_PATH, batchsize=1, mode='test', data_shape=EXTRACT_LAYER_SIZE)
+	vqa_data_provider = LoadVQADataProvider(VDICT_PATH, ADICT_PATH, batchsize=1, data_shape=EXTRACT_LAYER_SIZE)
 	vqa_data_provider_layer.CURRENT_DATA_SHAPE = EXTRACT_LAYER_SIZE
 	config = tf.ConfigProto()
 	config.gpu_options.allow_growth = True

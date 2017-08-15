@@ -29,7 +29,7 @@ class LoadVQADataProvider:
         self.mode = mode
         self.data_shape = data_shape
 
-        assert self.mode == 'test'
+        # assert self.mode == 'test'
 
         # load vocabulary
         with open(vdict_path,'r') as f:
