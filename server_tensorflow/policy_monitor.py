@@ -88,29 +88,38 @@ class PolicyMonitor(object):
 				self.saver.save(sess, self.checkpoint_path)
 
 			print "Eval results at step {}: first_accuracy {}, last_reward {}, total_reward {}, episode_length {}".format(global_step, accuracy, reward, total_reward, episode_length)
-			# tf.logging.info("Eval results at step {}: total_reward {}, episode_length {}".format(global_step, total_reward, episode_length))
 
-			return total_reward, episode_length, reward
+			return total_reward, episode_length, accuracy, reward, (self.env.img_path, self.env.question, self.env.answer, episode_length)
 
 	def continuous_eval(self, eval_every, sess, coord):
 		"""
 		Continuously evaluates the policy every [eval_every] seconds.
 		"""
-		if not IS_TRAIN:
-			accuracies = []
+		accuracies = []
+		episode_lengths = []
+		corrected = 0
+		wronged = 0
 		try:
 			while not coord.should_stop():
-				_, _, reward = self.eval_once(sess)
+				_, episode_length, first_accuracy, reward, data = self.eval_once(sess)
+				episode_lengths.append(episode_length)
+				if reward == 3:
+					accuracies.append(1.0)
+				else:
+					accuracies.append(0.0)
+				if reward == 3 and first_accuracy < 0.1:
+					corrected += 1
+					with open("corrections.txt", "a") as f:
+						f.write("Corrected data: {}\n".format(data))
+				elif reward == -3 and first_accuracy > 0.9:
+					wronged += 1
+					with open("wrongs.txt", "a") as f:
+						f.write("Wronged data: {}\n".format(data))
+				print "Till now accuracy: {}, corrected: {}, wronged: {}, improved: {}, processed: {}, avg_episode_length: {}".format(sum(accuracies) / len(accuracies), corrected, wronged, float(corrected - wronged) / len(accuracies), len(accuracies), float(sum(episode_lengths))/len(episode_lengths))
+				if (not IS_TRAIN) and (len(accuracies) > Environment.data_num):
+					break
 				# Sleep until next evaluation cycle
 				if IS_TRAIN:
 					time.sleep(eval_every)
-				else:
-					if reward == 3:
-						accuracies.append(1.0)
-					else:
-						accuracies.append(0.0)
-					print "Till now accuracy: {}".format(sum(accuracies) / len(accuracies))
-					if len(accuracies) == len(Environment.vqa_data):
-						break
 		except tf.errors.CancelledError:
 			return
