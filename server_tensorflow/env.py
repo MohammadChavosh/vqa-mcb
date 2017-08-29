@@ -21,6 +21,7 @@ class Environment:
 			print "Total dataset passed once"
 			Environment.data_num = 0
 		self.img_array = cv2.imread(img_path)
+		self.img_path = img_path
 		self.question = question
 		self.answer = answer
 		self.steps = 0
@@ -118,6 +119,7 @@ class Environment:
 			print "Total dataset passed once"
 			Environment.data_num = 0
 		self.img_array = cv2.imread(img_path)
+		self.img_path = img_path
 		self.question = question
 		self.answer = answer
 		self.steps = 0
