@@ -104,5 +104,5 @@ class VQAModel:
 		labels[correct_answer] = 1.0
 		loss = log_loss(labels, soft_max)
 		accuracy = float(correct_answer == prediction)
-		state = np.concatenate((q_features.reshape((1, -1)), att_features.reshape((1, -1))), axis=1)
+		state = np.concatenate((q_features.reshape((1, -1)), att_features.reshape((1, -1)), soft_max.reshape((1, -1))), axis=1)
 		return loss, accuracy, state, prediction

@@ -15,13 +15,19 @@ def build_shared_network(states, add_summaries=False):
 	states = tf.to_float(states)
 	fc1 = tf.contrib.layers.fully_connected(
 		inputs=states,
-		num_outputs=256,
+		num_outputs=1024,
 		scope="fc1")
+	relu_fc1 = tf.nn.relu(fc1)
+	fc2 = tf.contrib.layers.fully_connected(
+		inputs=relu_fc1,
+		num_outputs=256,
+		scope="fc2")
 
 	if add_summaries:
 		tf.contrib.layers.summarize_activation(fc1)
+		tf.contrib.layers.summarize_activation(fc2)
 
-	return fc1
+	return fc2
 
 
 class PolicyEstimator():
