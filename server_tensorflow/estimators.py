@@ -46,7 +46,7 @@ class PolicyEstimator():
 	def __init__(self, num_outputs, reuse=False, trainable=True):
 		self.num_outputs = num_outputs
 
-		self.states = tf.placeholder(shape=[None, 6145], dtype=tf.uint8, name="X")
+		self.states = tf.placeholder(shape=[None, 9145], dtype=tf.uint8, name="X")
 		self.targets = tf.placeholder(shape=[None], dtype=tf.float32, name="y")
 		self.actions = tf.placeholder(shape=[None], dtype=tf.int32, name="actions")
 
@@ -104,7 +104,7 @@ class ValueEstimator():
 	"""
 
 	def __init__(self, reuse=False, trainable=True):
-		self.states = tf.placeholder(shape=[None, 6145], dtype=tf.uint8, name="X")
+		self.states = tf.placeholder(shape=[None, 9145], dtype=tf.uint8, name="X")
 		self.targets = tf.placeholder(shape=[None], dtype=tf.float32, name="y")
 
 		# Graph shared with Value Net
