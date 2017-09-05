@@ -68,9 +68,11 @@ class PolicyMonitor(object):
 			state = self.env.state
 			total_reward = 0.0
 			episode_length = 0
+			actions = []
 			while not done:
 				action_probs = self._policy_net_predict(state, sess)
 				action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+				actions.append(VALID_ACTIONS[action])
 				reward, done = self.env.action(VALID_ACTIONS[action])
 				next_state = self.env.state
 				total_reward += reward
@@ -88,8 +90,9 @@ class PolicyMonitor(object):
 				self.saver.save(sess, self.checkpoint_path)
 
 			print "Eval results at step {}: first_accuracy {}, last_reward {}, total_reward {}, episode_length {}".format(global_step, accuracy, reward, total_reward, episode_length)
+			print "Actions: {}".format(actions)
 
-			return total_reward, episode_length, accuracy, reward, (self.env.img_path, self.env.question, self.env.answer, episode_length)
+			return total_reward, episode_length, accuracy, reward, (self.env.img_path, self.env.question, self.env.answer, episode_length, actions)
 
 	def continuous_eval(self, eval_every, sess, coord):
 		"""
