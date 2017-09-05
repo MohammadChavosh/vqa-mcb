@@ -92,7 +92,7 @@ class PolicyMonitor(object):
 			print "Eval results at step {}: first_accuracy {}, last_reward {}, total_reward {}, episode_length {}".format(global_step, accuracy, reward, total_reward, episode_length)
 			print "Actions: {}".format(actions)
 
-			return total_reward, episode_length, accuracy, reward, (self.env.img_path, self.env.question, self.env.answer, episode_length, actions)
+			return total_reward, episode_length, accuracy, reward, (Environment.data_num, self.env.img_path, self.env.question, self.env.answer, episode_length, actions)
 
 	def continuous_eval(self, eval_every, sess, coord):
 		"""
